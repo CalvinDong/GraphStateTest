@@ -34,16 +34,14 @@ var links = [
 
 var nodes = [];
 var links = [];
-
 ReadAdjMatrix(data)
-/*
-var svg = d3.select("#graphState")
-.append("svg")
-    .attr("width", 400)
-    .attr("height", 600)
-    .attr("fill", "yellow")
-.append("g").attr("transform", "translate(400,1000)")*/
 
+
+const link = d3.select('svg')
+  .selectAll('line')
+  .data(links) // bind links data to line objects in DOM
+  .join('line') // join adds a line for each edge in links (also lets you specify entry, exit update behaviour)
+  .attr('stroke', "black")
 
 var simulation = d3.forceSimulation(nodes)
   .force('charge', d3.forceManyBody().strength(-10))
@@ -85,7 +83,7 @@ function updateNodes(){ // Create nodes
 }
 
 function updateLinks() { // Create links
-  var u = d3.select('svg')
+  /*var u = d3.select('svg')
     .selectAll('line')
     .data(links) // bind links data to line objects in DOM
 
@@ -106,7 +104,12 @@ function updateLinks() { // Create links
         return d.target.y
       })
 
-  u.exit().remove()
+  //u.exit().remove()*/
+  link
+      .attr("x1", d => d.source.x)
+      .attr("y1", d => d.source.y)
+      .attr("x2", d => d.target.x)
+      .attr("y2", d => d.target.y);
 }
 
 function ticked() {
