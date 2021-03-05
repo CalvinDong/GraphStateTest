@@ -21,26 +21,42 @@ const link = d3.select('svg')
   .join('line') // join adds a line for each edge in links (also lets you specify entry, exit update behaviour)
   .attr('stroke', "black")
 
+/*
 const node = d3.select('svg')
-  .selectAll('cirlce')
+  .selectAll('circle')
   .data(nodes)
   .join('circle')
   .attr('r', 8)
+*/
+
+const node = d3.select('svg')
+  .append('g')
+  .selectAll('circle')
+  .data(nodes)
+    .join('circle')
+    .attr('r', 8)
+    //.join('text')
+    //.text(function(d) { return d; }
 
 const simulation = d3.forceSimulation(nodes)
-  .force('charge', d3.forceManyBody().strength(-10))
+  .force('charge', d3.forceManyBody().strength(-0.5))
   .force('center', d3.forceCenter(300 / 2, 300 / 2)) 
   .force('link', d3.forceLink().links(links)) // This is what creates the network
   .on('tick', ticked);
 
 const drag = d3.drag()
-  .on('drag', dragged);
+  .on('drag', dragged)
+  .on('end', dragEnded);
 
 
 node.call(drag)
 
 function dragged(event, d){
   d3.select(this).attr("cx", d.x = event.x).attr("cy", d.y = event.y);
+}
+
+function dragEnded(){
+  simulation.alpha(1).restart();
 }
 
 function ticked() { // Update position of nodes and links for every simulation tick
@@ -56,7 +72,9 @@ function ticked() { // Update position of nodes and links for every simulation t
 }
 
 function ReadAdjMatrix(matrix){
-  matrix.forEach(throwAway => {nodes.push({})})
+  matrix.forEach(function(obj, index){
+    nodes.push({index}
+  )})
   matrix.forEach(function(row, i){
     row.forEach(function(target, j){
       if (target == 1){
