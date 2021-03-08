@@ -10,39 +10,30 @@ let data;
 data = dummyData;
 console.log(data)
 
-var nodes = [];
-var links = [];
+let nodes = [];
+let links = [];
+let node;
+let circles;
+let text;
 
 ReadAdjMatrix(data)
 
+DrawNodes()
+
+/*
 const link = d3.select('svg')
   .selectAll('line')
   .data(links) // bind links data to line objects in DOM
   .join('line') // join adds a line for each edge in links (also lets you specify entry, exit update behaviour)
   .attr('stroke', "black")
 
-/*
-const node = d3.select('svg')
-  .selectAll('circle')
-  .data(nodes)
-  .join('circle')
-  .attr('r', 8)
-*/
-
-/*
-const node = d3.select('svg')
-  .selectAll('g')
-  .data(nodes)
-    .join('circle')
-    .attr('r', 8)
-    //.join('text')
-    //.text(function(d) { return d; }
-*/
 const node = d3.select('svg')
   .attr("class", "nodes")
   .selectAll('g')
   .data(nodes)
     .join('g')
+
+//node.remove().exit
 
 const circles = node.append('circle')
   .attr('r', 8)
@@ -57,18 +48,41 @@ const text = node.append('text')
   .attr('x', 10)
   .attr('y', 6);
 
+*/
+
 const simulation = d3.forceSimulation(nodes)
   .force('charge', d3.forceManyBody().strength(-0.5))
   .force('center', d3.forceCenter(300 / 2, 300 / 2)) 
   .force('link', d3.forceLink().links(links)) // This is what creates the network
   .on('tick', ticked);
 
-/*
-const drag = d3.drag()
-  .on('drag', dragged)
-  .on('end', dragEnded);
-node.call(drag)
-*/
+function DrawNodes(){
+  node = d3.select('svg')
+    .attr("class", "nodes")
+    .selectAll('g')
+    .data(nodes)
+      .join('g')
+    .call(d3.drag()
+    .on("start", dragstarted)
+    .on('drag', dragged)
+    .on('end', dragEnded)
+);
+
+  circles = node.append('circle')
+    .attr('r', 8)
+
+  text = node.append('text')
+  .text(d => d.text)
+  .attr('x', 10)
+  .attr('y', 6);
+
+  link = d3.select('svg')
+  .selectAll('line')
+  .data(links) // bind links data to line objects in DOM
+  .join('line') // join adds a line for each edge in links (also lets you specify entry, exit update behaviour)
+  .attr('stroke', "black")
+
+}
 
 function dragstarted(d) {
   //if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -77,9 +91,8 @@ function dragstarted(d) {
 }
 
 function dragged(event, d){
-  console.log(d)
-  console.log(event)
-  d3.select(this).attr("cx", d.x = event.x).attr("cy", d.y = event.y);
+  d3.select(this)
+  .attr("transform", d => `translate(${d.x = event.x}, ${d.y = event.y})`);
 }
 
 function dragEnded(){
@@ -112,4 +125,12 @@ function ReadAdjMatrix(matrix){
   })
   console.log(nodes)
   console.log(links)
+}
+
+function AddNode(){
+  console.log("adding")
+  nodes.push({text: nodes.length})
+  console.log(nodes)
+  DrawNodes()
+  
 }
