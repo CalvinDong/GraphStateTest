@@ -1,8 +1,8 @@
 let dummyData = 
 [
-    [0,1,0,0,0],
+    [0,1,1,0,0],
     [1,0,0,0,1],
-    [0,0,0,0,0],
+    [1,0,0,0,0],
     [0,0,0,0,0],
     [0,1,0,0,0]
 ];
@@ -23,41 +23,13 @@ ReadAdjMatrix(data)
 
 //DrawNodes()
 
-/*
-const link = d3.select('svg')
-  .selectAll('line')
-  .data(links) // bind links data to line objects in DOM
-  .join('line') // join adds a line for each edge in links (also lets you specify entry, exit update behaviour)
-  .attr('stroke', "black")
 
-const node = d3.select('svg')
-  .attr("class", "nodes")
-  .selectAll('g')
-  .data(nodes)
-    .join('g')
-
-//node.remove().exit
-
-const circles = node.append('circle')
-  .attr('r', 8)
-  .call(d3.drag()
-    .on("start", dragstarted)
-    .on('drag', dragged)
-    .on('end', dragEnded)
-  );
-
-const text = node.append('text')
-  .text(d => d.text)
-  .attr('x', 10)
-  .attr('y', 6);
-
-*/
-
-
-const simulation = d3.forceSimulation(nodes)
-  .force('charge', d3.forceManyBody().strength(-0.5))
+let simulation = d3.forceSimulation(nodes)
+  .force('charge', d3.forceManyBody().strength(-100))
   .force('center', d3.forceCenter(300 / 2, 300 / 2)) 
   .force('link', d3.forceLink().links(links)) // This is what creates the network
+  .force("x", d3.forceX())
+  .force("y", d3.forceY())
   .on('tick', ticked);
 
 let svg = d3.select('svg')
@@ -82,6 +54,18 @@ node_enter.append('text')
   .text(d => d.id)
   .attr('x', 10)
   .attr('y', 6);
+
+/*  
+let node_enter = node.join('circle')
+  .attr('class', 'node')
+  .attr('r', 8)
+  .call(d3.drag()
+      .on("start", dragstarted)
+      .on('drag', dragged)
+      .on('end', dragEnded)
+    )
+  .on("click", clickedNode);
+*/
 
 link = svg.selectAll('line')
   .data(links) // bind links data to line objects in DOM
@@ -150,6 +134,8 @@ function DrawNodes(){
   node = svg.selectAll('.node')
   .data(nodes) 
 
+  console.log(nodes)
+
   node_enter = node.enter().append('g') // enter().append() pattern to draw one at a time, .join() for all data in array
     .attr('class', 'node')
     .call(d3.drag()
@@ -167,10 +153,27 @@ function DrawNodes(){
     .attr('x', 10)
     .attr('y', 6);
 
+  node.exit().remove()
+
+  /*  
+  let node_enter = node.join('circle')
+  .attr('class', 'node')
+  .attr('r', 8)
+  .call(d3.drag()
+      .on("start", dragstarted)
+      .on('drag', dragged)
+      .on('end', dragEnded)
+    )
+  .on("click", clickedNode);*/
+
   link = svg.selectAll('line')
     .data(links) // bind links data to line objects in DOM
     .join('line') // join adds a line for each edge in links (also lets you specify entry, exit update behaviour)
     .attr('stroke', "black")
+
+  simulation.nodes(nodes)
+  simulation.force("link").links(links);
+  simulation.alpha(1).restart();
 }
 
 function AddNode(event){
@@ -179,10 +182,6 @@ function AddNode(event){
   tempNodes.push({id: nodes.length, x: event.x, y: event.y})
   nodes = tempNodes 
   DrawNodes()
-
-  simulation.nodes(nodes)
-  simulation.force("link").links(links);
-  simulation.alpha(1).restart();
 }
 
 function RemoveNode(d){
@@ -190,13 +189,10 @@ function RemoveNode(d){
   nodes.splice(d.index, 1);
   links = links.filter(function(n){
     return (n.source != d && n.target != d)
-  })
-  console.log(links)
+  });
+  console.log(links);
   DrawNodes()
-
-  simulation.nodes(nodes)
-  simulation.force("link").links(links);
-  simulation.alpha(1).restart();
+  console.log(simulation.nodes())
 }
 
 function AddNodeActive(){
