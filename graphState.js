@@ -16,13 +16,12 @@ let circles;
 let text;
 let nodeAdd = false;
 let nodeRemove = false;
+let edgeAdd = false;
+let edgeRemove = false;
 let drag = true;
+let clickCount = 0;
 
 ReadAdjMatrix(data)
-
-
-//DrawNodes()
-
 
 let simulation = d3.forceSimulation(nodes)
   .force('charge', d3.forceManyBody().strength(-100))
@@ -54,18 +53,6 @@ node_enter.append('text')
   .text(d => d.id)
   .attr('x', 10)
   .attr('y', 6);
-
-/*  
-let node_enter = node.join('circle')
-  .attr('class', 'node')
-  .attr('r', 8)
-  .call(d3.drag()
-      .on("start", dragstarted)
-      .on('drag', dragged)
-      .on('end', dragEnded)
-    )
-  .on("click", clickedNode);
-*/
 
 link = svg.selectAll('line')
   .data(links) // bind links data to line objects in DOM
@@ -131,6 +118,11 @@ function ReadAdjMatrix(matrix){
 }
 
 function DrawNodes(){
+  simulation.nodes(nodes)
+  simulation.force("link").links(links);
+  
+  node = svg.selectAll('.node').remove()
+
   node = svg.selectAll('.node')
   .data(nodes) 
 
@@ -153,26 +145,16 @@ function DrawNodes(){
     .attr('x', 10)
     .attr('y', 6);
 
-  node.exit().remove()
-
-  /*  
-  let node_enter = node.join('circle')
-  .attr('class', 'node')
-  .attr('r', 8)
-  .call(d3.drag()
-      .on("start", dragstarted)
-      .on('drag', dragged)
-      .on('end', dragEnded)
-    )
-  .on("click", clickedNode);*/
-
+  node.exit().remove()  // Remove any extra groups
+                        // BUG: It doesn't remove the actual node you click on, just the last one in the body
+ 
   link = svg.selectAll('line')
     .data(links) // bind links data to line objects in DOM
     .join('line') // join adds a line for each edge in links (also lets you specify entry, exit update behaviour)
     .attr('stroke', "black")
 
-  simulation.nodes(nodes)
-  simulation.force("link").links(links);
+  //simulation.nodes(nodes)
+  //simulation.force("link").links(links);
   simulation.alpha(1).restart();
 }
 
