@@ -20,11 +20,13 @@ let edgeAdd = false;
 let edgeRemove = false;
 let drag = true;
 let clickCount = 0;
+let node1 = null;
+let node2 = null;
 
 ReadAdjMatrix(data)
 
 let simulation = d3.forceSimulation(nodes)
-  .force('charge', d3.forceManyBody().strength(-100))
+  .force('charge', d3.forceManyBody().strength(-500))
   .force('center', d3.forceCenter(300 / 2, 300 / 2)) 
   .force('link', d3.forceLink().links(links)) // This is what creates the network
   .force("x", d3.forceX())
@@ -58,10 +60,16 @@ link = svg.selectAll('line')
   .data(links) // bind links data to line objects in DOM
   .join('line') // join adds a line for each edge in links (also lets you specify entry, exit update behaviour)
   .attr('stroke', "black")
+  .on("click", clickedLine);
 
 function clickedSVG(event, d){
   if (nodeAdd && event.srcElement === svg._groups[0][0]){ // svg groups to prevent spawning on nodes
     AddNode(event)
+  }
+  if (edgeAdd && event.srcElement === svg._groups[0][0]){ // If adding edge and pressing outside a node, reset edge add
+    clickCount = 0;
+    node1 = null;
+    node2 = null;
   }
 }
 
@@ -71,7 +79,29 @@ function clickedNode(event, d){
   if (nodeRemove){
     RemoveNode(d)
   }
+  if (edgeAdd){
+    clickCount++;
+    if (clickCount == 1){
+      node1 = d;
+    }
+    if (clickCount == 2){
+      node2 = d;
+      AddEdge();
+      clickCount = 0;
+      node1 = null;
+      node2 = null;
+    }
+    console.log(clickCount)
+  }
 
+}
+
+function clickedLine(event, d){
+  console.log(event)
+  console.log(d)
+  if (edgeRemove){
+    RemoveEdge(d)
+  }
 }
 
 function dragstarted(d) {
@@ -81,9 +111,6 @@ function dragstarted(d) {
 function dragged(event, d){
   d3.select(this)
     .attr("transform", d => `translate(${d.x = event.x}, ${d.y = event.y})`); //For moving g elements
-  
-  //d3.select(this)
-  //  .attr("cx", d.x = event.x).attr("cy", d.y = event.y);
 }
 
 function dragEnded(){
@@ -146,22 +173,18 @@ function DrawNodes(){
     .attr('y', 6);
 
   node.exit().remove()  // Remove any extra groups
-                        // BUG: It doesn't remove the actual node you click on, just the last one in the body
  
   link = svg.selectAll('line')
     .data(links) // bind links data to line objects in DOM
     .join('line') // join adds a line for each edge in links (also lets you specify entry, exit update behaviour)
     .attr('stroke', "black")
-
-  //simulation.nodes(nodes)
-  //simulation.force("link").links(links);
   simulation.alpha(1).restart();
 }
 
 function AddNode(event){
-  console.log("adding")
-  let tempNodes = [...nodes];
-  tempNodes.push({id: nodes.length, x: event.x, y: event.y})
+  console.log("adding node")
+  let tempNodes = [...nodes, {id: nodes.length, x: event.x, y: event.y}]; // Need to check that we're not adding 
+                                                                          // existing links
   nodes = tempNodes 
   DrawNodes()
 }
@@ -173,24 +196,61 @@ function RemoveNode(d){
     return (n.source != d && n.target != d)
   });
   console.log(links);
+  DrawNodes();
+  console.log(simulation.nodes());
+}
+
+function AddEdge(){
+  console.log("adding edge");
+  let tempEdges = [...links, {source: node1, target: node2}];
+  links = tempEdges
   DrawNodes()
-  console.log(simulation.nodes())
 }
 
-function AddNodeActive(){
-  nodeAdd = true;
-  nodeRemove = false;
-  drag = false;
-}
-
-function RemoveNodeActive(){
-  nodeAdd = false;
-  nodeRemove = true;
-  drag = false;
+function RemoveEdge(d){
+  console.log("removing edge");
+  links.splice(d.index, 1);
+  DrawNodes()
 }
 
 function DragActive(){
   nodeAdd = false;
   nodeRemove = false;
   drag = true;
+  edgeAdd = false;
+  edgeRemove = false;
 }
+
+function AddNodeActive(){
+  nodeAdd = true;
+  nodeRemove = false;
+  drag = false;
+  edgeAdd = false;
+  edgeRemove = false;
+}
+
+function RemoveNodeActive(){
+  nodeAdd = false;
+  nodeRemove = true;
+  drag = false;
+  edgeAdd = false;
+  edgeRemove = false;
+}
+
+function AddEdgeActive(){
+  nodeAdd = false;
+  nodeRemove = false;
+  drag = false;
+  edgeAdd = true;
+  edgeRemove = false;
+}
+
+function RemoveEdgeActive(){
+  nodeAdd = false;
+  nodeRemove = false;
+  drag = false;
+  edgeAdd = false;
+  edgeRemove = true;
+}
+
+
