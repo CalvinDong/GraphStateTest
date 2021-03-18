@@ -254,3 +254,7 @@ function RemoveEdgeActive(){
 }
 
 
+// x measure, y measure, z measure, keep vector of booleans to be drawn. 
+// Call Jabalizer for every measure/action and re draw according to given matrix from jabalizer.
+// Remove node is to detatch all edges.
+// Get the visuals we want.     
