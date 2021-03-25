@@ -6,6 +6,7 @@ let dummyData =
     [0,0,0,0,0],
     [0,1,0,0,0]
 ];
+
 let data;
 data = dummyData;
 console.log(data)
@@ -22,6 +23,9 @@ let drag = true;
 let clickCount = 0;
 let node1 = null;
 let node2 = null;
+let isMoving = true;
+let timer = setInterval(timeInitial, 700)
+clearInterval(timeInitial)
 
 ReadAdjMatrix(data)
 
@@ -82,7 +86,17 @@ link = svg.selectAll('line')
   .data(links) // bind links data to line objects in DOM
   .join('line') // join adds a line for each edge in links (also lets you specify entry, exit update behaviour)
   .attr('stroke', "black")
-  .on("click", clickedLine);
+  .on("mousedown", clickedLine);
+
+function timeInitial(){
+  if (isMoving){
+    nodes.forEach(function(obj){
+      obj.fx = obj.x
+      obj.fy = obj.y
+    })
+    isMoving = false
+  }
+}
 
 function clickedSVG(event, d){
   if (nodeAdd && event.srcElement === svg._groups[0][0]){ // svg groups to prevent spawning on nodes
@@ -97,7 +111,6 @@ function clickedSVG(event, d){
 
 function clickedNode(event, d){
   console.log(event)
-  console.log(d)
   if (nodeRemove){
     RemoveNode(d)
   }
@@ -133,10 +146,13 @@ function dragstarted(d) {
 function dragged(event, d){
   d3.select(this)
     .attr("transform", d => `translate(${d.x = event.x}, ${d.y = event.y})`); //For moving g elements
+  d.fx = event.x;
+  d.fy = event.y;
+  simulation.alpha(1).restart();
 }
 
 function dragEnded(){
-  simulation.alpha(1).restart();
+  //simulation.alpha(1).restart();
 }
 
 function ticked() { // Update position of nodes and links for every simulation tick
@@ -146,7 +162,7 @@ function ticked() { // Update position of nodes and links for every simulation t
     .attr("x2", d => d.target.x)
     .attr("y2", d => d.target.y);
 
-  svg.selectAll('.node')
+  node_enter
     .attr("transform", d => `translate(${d.x}, ${d.y})`); 
 }
 
@@ -205,11 +221,7 @@ function DrawNodes(){
 
 function AddNode(event){
   console.log("adding node")
-  /*nodes.forEach(function(obj){
-    obj.fx = obj.x
-    obj.fy = obj.y
-  })*/
-  let tempNodes = [...nodes, {id: nodes.length, x: event.x, y: event.y}]; // Need to check that we're not adding 
+  let tempNodes = [...nodes, {id: nodes.length, fx: event.x, fy: event.y}]; // Need to check that we're not adding 
                                                                           // existing links
   nodes = tempNodes 
   DrawNodes()
