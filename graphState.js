@@ -25,16 +25,38 @@ let node2 = null;
 
 ReadAdjMatrix(data)
 
+
+
 let simulation = d3.forceSimulation(nodes)
-  .force('charge', d3.forceManyBody().strength(-500))
-  .force('center', d3.forceCenter(300 / 2, 300 / 2)) 
-  .force('link', d3.forceLink().links(links)) // This is what creates the network
+  .force('charge', d3.forceManyBody().strength(-250))
+  .force('center', d3.forceCenter(1200 / 2, 1200 / 2)) 
+  .force('link', d3.forceLink().links(links).distance(100)) // This is what creates the network
   .force("x", d3.forceX())
   .force("y", d3.forceY())
   .on('tick', ticked);
 
+nodes.forEach(function(obj){
+  //obj.fx = obj.x;
+  //obj.fy = obj.y;
+})
+
+document.body.onmousemove = moveCursor; // Add text next to cursor
+var curTxt=document.createElement('div');
+curTxt.id="cursorText";
+curTxt.innerHTML="D"; /* Or whatever you want */
+document.body.appendChild(curTxt);
+var curTxtLen=[curTxt.offsetWidth,curTxt.offsetHeight];
+
+function moveCursor(e){
+    if(!e){e=window.event;}
+    curTxt.style.left=e.clientX-curTxtLen[0]+'px';
+    curTxt.style.top=e.clientY-curTxtLen[1]+'px';
+}
+
+
 let svg = d3.select('svg')
   .on("click", clickedSVG);
+
 
 let node = svg.selectAll('.node')
   .data(nodes) 
@@ -183,6 +205,10 @@ function DrawNodes(){
 
 function AddNode(event){
   console.log("adding node")
+  /*nodes.forEach(function(obj){
+    obj.fx = obj.x
+    obj.fy = obj.y
+  })*/
   let tempNodes = [...nodes, {id: nodes.length, x: event.x, y: event.y}]; // Need to check that we're not adding 
                                                                           // existing links
   nodes = tempNodes 
@@ -191,7 +217,8 @@ function AddNode(event){
 
 function RemoveNode(d){
   console.log("removing")
-  nodes.splice(d.index, 1);
+  console.log(d)
+  //nodes.splice(d.index, 1);
   links = links.filter(function(n){
     return (n.source != d && n.target != d)
   });
@@ -227,6 +254,7 @@ function AddNodeActive(){
   drag = false;
   edgeAdd = false;
   edgeRemove = false;
+  curTxt.innerHTML = "V"
 }
 
 function RemoveNodeActive(){
@@ -235,6 +263,7 @@ function RemoveNodeActive(){
   drag = false;
   edgeAdd = false;
   edgeRemove = false;
+  curTxt.innerHTML = "Z"
 }
 
 function AddEdgeActive(){
@@ -243,6 +272,7 @@ function AddEdgeActive(){
   drag = false;
   edgeAdd = true;
   edgeRemove = false;
+  curTxt.innerHTML = "E"
 }
 
 function RemoveEdgeActive(){
@@ -251,7 +281,9 @@ function RemoveEdgeActive(){
   drag = false;
   edgeAdd = false;
   edgeRemove = true;
+  curTxt.innerHTML = "Z"
 }
+
 
 
 // x measure, y measure, z measure, keep vector of booleans to be drawn. 
