@@ -29,6 +29,12 @@ clearInterval(timeInitial)
 
 ReadAdjMatrix(data)
 
+document.body.onmousemove = moveCursor; // Add text next to cursor
+var curTxt=document.createElement('div');
+curTxt.id="cursorText";
+curTxt.innerHTML="D"; /* Or whatever you want */
+document.body.appendChild(curTxt);
+var curTxtLen=[curTxt.offsetWidth,curTxt.offsetHeight];
 
 
 let simulation = d3.forceSimulation(nodes)
@@ -38,24 +44,6 @@ let simulation = d3.forceSimulation(nodes)
   .force("x", d3.forceX())
   .force("y", d3.forceY())
   .on('tick', ticked);
-
-nodes.forEach(function(obj){
-  //obj.fx = obj.x;
-  //obj.fy = obj.y;
-})
-
-document.body.onmousemove = moveCursor; // Add text next to cursor
-var curTxt=document.createElement('div');
-curTxt.id="cursorText";
-curTxt.innerHTML="D"; /* Or whatever you want */
-document.body.appendChild(curTxt);
-var curTxtLen=[curTxt.offsetWidth,curTxt.offsetHeight];
-
-function moveCursor(e){
-    if(!e){e=window.event;}
-    curTxt.style.left=e.clientX-curTxtLen[0]+'px';
-    curTxt.style.top=e.clientY-curTxtLen[1]+'px';
-}
 
 
 let svg = d3.select('svg')
@@ -87,6 +75,12 @@ link = svg.selectAll('line')
   .join('line') // join adds a line for each edge in links (also lets you specify entry, exit update behaviour)
   .attr('stroke', "black")
   .on("mousedown", clickedLine);
+
+function moveCursor(e){
+  if(!e){e=window.event;}
+  curTxt.style.left=e.clientX-curTxtLen[0]+'px';
+  curTxt.style.top=e.clientY-curTxtLen[1]+'px';
+}
 
 function timeInitial(){
   if (isMoving){
@@ -180,6 +174,17 @@ function ReadAdjMatrix(matrix){
   })
   console.log(nodes)
   console.log(links)
+}
+
+function OutAdjMatrix(){
+  let len = nodes.length;
+  let adjStart = new Array(len).fill(0)
+  let adj = adjStart.map(num => num = new Array(len).fill(0))
+  links.forEach(function (link){
+    adj[link.source.id][link.target.id] = 1
+    adj[link.target.id][link.source.id] = 1
+  });
+  console.log(adj)
 }
 
 function DrawNodes(){
